@@ -69,8 +69,7 @@ fun AppRoot() {
             }
             composable(Screen.Discover.route) { DiscoverScreen() }
             composable(Screen.Profile.route) { ProfileScreen() }
-
-            // 
+            
             composable(Screen.CreatePlan.route) { PlaceholderScreen("Create new trip plan (placeholder)") }
             composable(Screen.JoinTeam.route) { PlaceholderScreen("Join a team (placeholder)") }
         }
