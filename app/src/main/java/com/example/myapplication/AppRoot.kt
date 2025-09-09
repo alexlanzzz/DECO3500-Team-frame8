@@ -70,7 +70,7 @@ fun AppRoot() {
             composable(Screen.Discover.route) { DiscoverScreen() }
             composable(Screen.Profile.route) { ProfileScreen() }
 
-            // 占位页面
+            // 
             composable(Screen.CreatePlan.route) { PlaceholderScreen("Create new trip plan (placeholder)") }
             composable(Screen.JoinTeam.route) { PlaceholderScreen("Join a team (placeholder)") }
         }
