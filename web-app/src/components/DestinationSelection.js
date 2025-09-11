@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import infoIcon from '../assets/icons/info.png';
+import purseIcon from '../assets/icons/purse.png';
 
 const DestinationSelection = () => {
   const navigate = useNavigate();
@@ -329,10 +331,7 @@ const DestinationSelection = () => {
             <div className="bottom-row">
               <div className="details">
                 <div className="price-row">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                  </svg>
+                  <img src={purseIcon} alt="Price" width="16" height="16" />
                   <span>{currentDestination.price} / person</span>
                 </div>
                 <div className="address-row">
@@ -345,10 +344,7 @@ const DestinationSelection = () => {
               </div>
               
               <button className="info-btn" onClick={(e) => { e.stopPropagation(); showToast('Detail page coming soon!'); }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M12 16v-4M12 8h.01"></path>
-                </svg>
+                <img src={infoIcon} alt="Info" width="20" height="20" />
               </button>
             </div>
           </div>
@@ -357,7 +353,9 @@ const DestinationSelection = () => {
 
       {/* Swipe Instructions */}
       <div className="instructions">
-        ← Swipe to choose destinations →
+        <span className="swipe-left">← Not interested</span>
+        <span className="swipe-divider"> | </span>
+        <span className="swipe-right">Interested →</span>
       </div>
 
       {/* Toast */}
@@ -366,7 +364,7 @@ const DestinationSelection = () => {
       <style jsx>{`
         .destination-selection {
           height: 100vh;
-          background-color: #F5F5F5;
+          background-color: white;
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -378,7 +376,6 @@ const DestinationSelection = () => {
           justify-content: space-between;
           padding: 16px;
           background-color: white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           z-index: 10;
         }
 
@@ -451,9 +448,14 @@ const DestinationSelection = () => {
         }
 
         .card-image {
-          height: 60%;
+          height: 100%;
           width: 100%;
           overflow: hidden;
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
         }
 
         .card-image img {
@@ -463,9 +465,8 @@ const DestinationSelection = () => {
         }
 
         .card-content {
-          height: 40%;
           padding: 20px;
-          background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+          background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, transparent 100%);
           color: white;
           position: absolute;
           bottom: 0;
@@ -474,6 +475,7 @@ const DestinationSelection = () => {
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
+          min-height: 200px;
         }
 
         .header-row {
@@ -557,6 +559,20 @@ const DestinationSelection = () => {
           font-size: 14px;
           color: #666;
           opacity: 0.7;
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .swipe-left {
+          color: #FF5722
+        }
+        .swipe-right {
+          color: #4CAF50
+        }
+        .swipe-divider {
+          color: #999;
         }
 
         @media (max-width: 480px) {
