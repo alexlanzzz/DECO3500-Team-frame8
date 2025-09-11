@@ -1,5 +1,8 @@
 package com.example.myapplication
 
+import android.content.Intent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
@@ -7,7 +10,9 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import androidx.navigation.NavHostController
@@ -25,6 +30,7 @@ sealed class Screen(val route: String, val label: String) {
 @Composable
 fun AppRoot() {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
     val bottomItems = listOf(Screen.Home, Screen.Discover, Screen.Profile)
 
@@ -69,8 +75,23 @@ fun AppRoot() {
             }
             composable(Screen.Discover.route) { DiscoverScreen() }
             composable(Screen.Profile.route) { ProfileScreen() }
-            
-            composable(Screen.CreatePlan.route) { PlaceholderScreen("Create new trip plan (placeholder)") }
+
+            composable(Screen.CreatePlan.route) {
+                LaunchedEffect(Unit) {
+                    val intent = Intent(context, DestinationSelection::class.java)
+                    context.startActivity(intent)
+                    navController.popBackStack()
+                }
+
+                // Show loading while launching activity
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
             composable(Screen.JoinTeam.route) { PlaceholderScreen("Join a team (placeholder)") }
         }
     }
