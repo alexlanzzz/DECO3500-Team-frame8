@@ -2,26 +2,28 @@ package com.example.myapplication;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
-import android.graphics.Color;
-
 public class DestinationSelection extends AppCompatActivity {
+    private static final String TAG = "DestinationSelection";
     private static final int MAX_SWIPES = 20;
-    private static final float SWIPE_THRESHOLD = 300f;
+    private static final float SWIPE_THRESHOLD = 200f; // Reduced threshold for easier swiping
 
     private CardView destinationCard;
     private TextView tvCounter;
@@ -36,6 +38,7 @@ public class DestinationSelection extends AppCompatActivity {
     private ImageView ivStarIcon;
     private ImageButton btnBack;
     private ImageButton btnInfo;
+    private FrameLayout cardContainer;
 
     private GestureDetector gestureDetector;
     private int currentSwipeCount = 1;
@@ -98,6 +101,8 @@ public class DestinationSelection extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.destination_selection);
 
+        Log.d(TAG, "onCreate: Starting DestinationSelection");
+
         initViews();
         setupGestureDetector();
         setupClickListeners();
@@ -106,7 +111,10 @@ public class DestinationSelection extends AppCompatActivity {
     }
 
     private void initViews() {
+        Log.d(TAG, "initViews: Initializing all views");
+
         destinationCard = findViewById(R.id.destination_card);
+        cardContainer = findViewById(R.id.card_container);
         tvCounter = findViewById(R.id.tv_counter);
         tvCityName = findViewById(R.id.tv_city_name);
         tvDateRange = findViewById(R.id.tv_date_range);
@@ -119,67 +127,183 @@ public class DestinationSelection extends AppCompatActivity {
         ivStarIcon = findViewById(R.id.star_icon);
         btnBack = findViewById(R.id.btn_back);
         btnInfo = findViewById(R.id.btn_info);
+
+        Log.d(TAG, "initViews: Card found: " + (destinationCard != null));
+        Log.d(TAG, "initViews: Container found: " + (cardContainer != null));
     }
 
     private void setupGestureDetector() {
+        Log.d(TAG, "setupGestureDetector: Setting up gesture detection");
+
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            private float totalScrollX = 0f;
+            private boolean swipeTriggered = false;
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                Log.d(TAG, "Gesture: onDown");
+                totalScrollX = 0f;
+                swipeTriggered = false;
+                return true; // Important: return true to continue processing
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                if (e1 != null && e2 != null && !swipeTriggered) {
+                    totalScrollX = e2.getX() - e1.getX();
+                    float totalScrollY = Math.abs(e2.getY() - e1.getY());
+
+                    Log.d(TAG, "Gesture: onScroll totalScrollX=" + totalScrollX + ", totalScrollY=" + totalScrollY);
+
+                    // Check if horizontal scroll distance exceeds threshold and is more horizontal than vertical
+                    if (Math.abs(totalScrollX) > SWIPE_THRESHOLD && Math.abs(totalScrollX) > totalScrollY) {
+                        swipeTriggered = true; // Prevent multiple triggers
+
+                        if (totalScrollX > 0) {
+                            Log.d(TAG, "Gesture: Scroll RIGHT detected (distance: " + totalScrollX + ")");
+                            onSwipeRight();
+                        } else {
+                            Log.d(TAG, "Gesture: Scroll LEFT detected (distance: " + totalScrollX + ")");
+                            onSwipeLeft();
+                        }
+                        return true;
+                    }
+                }
+                return true;
+            }
+
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (e1 == null || e2 == null) return false;
+                Log.d(TAG, "Gesture: onFling called");
+
+                if (e1 == null || e2 == null || swipeTriggered) {
+                    Log.d(TAG, "Gesture: e1/e2 null or swipe already triggered");
+                    return false;
+                }
 
                 float deltaX = e2.getX() - e1.getX();
                 float deltaY = Math.abs(e2.getY() - e1.getY());
 
+                Log.d(TAG, "Gesture: onFling deltaX=" + deltaX + ", deltaY=" + deltaY + ", threshold=" + SWIPE_THRESHOLD);
+
                 if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > deltaY) {
+                    swipeTriggered = true;
+
                     if (deltaX > 0) {
+                        Log.d(TAG, "Gesture: Fling RIGHT detected");
                         onSwipeRight();
                     } else {
+                        Log.d(TAG, "Gesture: Fling LEFT detected");
                         onSwipeLeft();
                     }
                     return true;
                 }
+                Log.d(TAG, "Gesture: No fling swipe detected");
                 return false;
             }
         });
 
-        // Apply touch listener to both the card and its content
-        View.OnTouchListener touchListener = new View.OnTouchListener() {
+        // Create a comprehensive touch listener with debug logging
+        View.OnTouchListener debugTouchListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                return gestureDetector.onTouchEvent(event);
+                String action = "";
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        action = "DOWN";
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        action = "MOVE";
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        action = "UP";
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        action = "CANCEL";
+                        break;
+                }
+                Log.d(TAG, "Touch: " + action + " on " + v.getClass().getSimpleName() +
+                        " at (" + event.getX() + ", " + event.getY() + ")");
+
+                boolean result = gestureDetector.onTouchEvent(event);
+                Log.d(TAG, "Touch: Gesture detector returned: " + result);
+                return result;
             }
         };
 
-        destinationCard.setOnTouchListener(touchListener);
+        // Apply touch listener to multiple views to ensure it works
+        if (cardContainer != null) {
+            Log.d(TAG, "Setting touch listener on cardContainer");
+            cardContainer.setOnTouchListener(debugTouchListener);
+        }
 
-        // Also apply to the content overlay to ensure touches work everywhere
+        if (destinationCard != null) {
+            Log.d(TAG, "Setting touch listener on destinationCard");
+            destinationCard.setOnTouchListener(debugTouchListener);
+        }
+
+        // Also try with the content overlay
         LinearLayout contentOverlay = findViewById(R.id.content_overlay);
         if (contentOverlay != null) {
-            contentOverlay.setOnTouchListener(touchListener);
+            Log.d(TAG, "Setting touch listener on contentOverlay");
+            contentOverlay.setOnTouchListener(debugTouchListener);
+        }
+
+        // Make sure buttons don't interfere with swiping
+        if (btnInfo != null) {
+            btnInfo.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        Log.d(TAG, "Info button touched");
+                        return false; // Let the button handle its own clicks
+                    }
+                    return false;
+                }
+            });
         }
     }
 
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v -> onBackPressed());
+        Log.d(TAG, "setupClickListeners: Setting up button clicks");
 
-        btnInfo.setOnClickListener(v -> {
-            Toast.makeText(this, "Navigate to detail page", Toast.LENGTH_SHORT).show();
-        });
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                Log.d(TAG, "Back button clicked");
+                onBackPressed();
+            });
+        }
+
+        if (btnInfo != null) {
+            btnInfo.setOnClickListener(v -> {
+                Log.d(TAG, "Info button clicked");
+                Toast.makeText(this, "Navigate to detail page", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     private void onSwipeLeft() {
+        Log.d(TAG, "onSwipeLeft: User rejected destination");
         animateCardExit(-1000f);
         Toast.makeText(this, "Not interested", Toast.LENGTH_SHORT).show();
         proceedToNextDestination();
     }
 
     private void onSwipeRight() {
+        Log.d(TAG, "onSwipeRight: User liked destination");
         animateCardExit(1000f);
         Toast.makeText(this, "Added to your trip!", Toast.LENGTH_SHORT).show();
         proceedToNextDestination();
     }
 
     private void animateCardExit(float translationX) {
+        Log.d(TAG, "animateCardExit: Starting animation with translation " + translationX);
+
+        if (destinationCard == null) {
+            Log.e(TAG, "animateCardExit: destinationCard is null!");
+            return;
+        }
+
         ObjectAnimator translateX = ObjectAnimator.ofFloat(destinationCard, "translationX", 0f, translationX);
         ObjectAnimator alpha = ObjectAnimator.ofFloat(destinationCard, "alpha", 1f, 0f);
         ObjectAnimator rotation = ObjectAnimator.ofFloat(destinationCard, "rotation", 0f, translationX > 0 ? 30f : -30f);
@@ -191,6 +315,7 @@ public class DestinationSelection extends AppCompatActivity {
         animatorSet.addListener(new android.animation.AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(android.animation.Animator animation) {
+                Log.d(TAG, "Animation completed");
                 resetCardPosition();
             }
         });
@@ -199,13 +324,17 @@ public class DestinationSelection extends AppCompatActivity {
     }
 
     private void resetCardPosition() {
-        destinationCard.setTranslationX(0f);
-        destinationCard.setAlpha(1f);
-        destinationCard.setRotation(0f);
+        Log.d(TAG, "resetCardPosition: Resetting card to original position");
+        if (destinationCard != null) {
+            destinationCard.setTranslationX(0f);
+            destinationCard.setAlpha(1f);
+            destinationCard.setRotation(0f);
+        }
     }
 
     private void proceedToNextDestination() {
         currentSwipeCount++;
+        Log.d(TAG, "proceedToNextDestination: Moving to " + currentSwipeCount + "/" + MAX_SWIPES);
 
         if (currentSwipeCount > MAX_SWIPES) {
             navigateToAgreementPage();
@@ -217,56 +346,66 @@ public class DestinationSelection extends AppCompatActivity {
 
     private void updateDestinationInfo() {
         int index = (currentSwipeCount - 1) % destinationNames.length;
+        Log.d(TAG, "updateDestinationInfo: Updating to destination " + index + ": " + destinationNames[index]);
 
-        tvDestinationName.setText(destinationNames[index]);
+        if (tvDestinationName != null) {
+            tvDestinationName.setText(destinationNames[index]);
+        }
 
-        if (index < descriptions.length) {
+        if (index < descriptions.length && tvDescription != null) {
             tvDescription.setText(descriptions[index]);
         }
 
-        if (index < ratings.length) {
+        if (index < ratings.length && tvRating != null) {
             float rating = ratings[index];
             tvRating.setText(String.valueOf(rating));
 
-            // Set both star and text color based on rating
             if (ivStarIcon != null) {
                 int ratingColor = getRatingColor(rating);
                 ivStarIcon.setColorFilter(ratingColor, PorterDuff.Mode.SRC_IN);
-                tvRating.setTextColor(ratingColor); // Add this line
+                tvRating.setTextColor(ratingColor);
             }
         }
 
-        if (index < prices.length) {
+        if (index < prices.length && tvPrice != null) {
             tvPrice.setText(prices[index] + " / person");
         }
 
-        if (index < addresses.length) {
+        if (index < addresses.length && tvAddress != null) {
             tvAddress.setText(addresses[index]);
         }
     }
 
     private int getRatingColor(float rating) {
         if (rating >= 4.5f) {
-            return Color.parseColor("#4CAF50"); // Use the same green as your preference
+            return Color.parseColor("#4CAF50");
         } else if (rating >= 4.0f) {
-            return Color.parseColor("#FF9800"); // Orange for good
+            return Color.parseColor("#FF9800");
         } else if (rating >= 3.0f) {
-            return Color.parseColor("#FF5722"); // Red-orange for average
+            return Color.parseColor("#FF5722");
         } else {
-            return Color.parseColor("#F44336"); // Red for poor
+            return Color.parseColor("#F44336");
         }
     }
 
     private void updateCounter() {
-        tvCounter.setText(currentSwipeCount + "/" + MAX_SWIPES);
+        if (tvCounter != null) {
+            tvCounter.setText(currentSwipeCount + "/" + MAX_SWIPES);
+        }
     }
 
     private void navigateToAgreementPage() {
+        Log.d(TAG, "navigateToAgreementPage: All destinations completed");
         Toast.makeText(this, "All destinations selected! Moving to agreement page.", Toast.LENGTH_LONG).show();
     }
 
     public void setTripData(String cityName, String dateRange) {
-        tvCityName.setText(cityName);
-        tvDateRange.setText(dateRange);
+        Log.d(TAG, "setTripData: Setting city=" + cityName + ", dates=" + dateRange);
+        if (tvCityName != null) {
+            tvCityName.setText(cityName);
+        }
+        if (tvDateRange != null) {
+            tvDateRange.setText(dateRange);
+        }
     }
 }
