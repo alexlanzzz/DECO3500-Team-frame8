@@ -8,15 +8,126 @@ const DestinationSelection = () => {
   const [currentSwipeCount, setCurrentSwipeCount] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [destinations, setDestinations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const cardRef = useRef(null);
   const startPosRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
 
   const MAX_SWIPES = 20;
   const SWIPE_THRESHOLD = 100;
+  
+  // Your Google Places API key
+  const GOOGLE_PLACES_API_KEY = 'AIzaSyCu1wvtBH6Lmgr-eqVfKTU76Sm6oNSMnJo';
 
-  // Brisbane destination data
-  const destinations = [
+  // Fetch places from Google Places API
+  const fetchPlacesFromGoogle = async () => {
+    console.log('Starting to fetch places from Google API...');
+    setIsLoading(true);
+    try {
+      const allDestinations = [];
+      
+      // Fetch Hotels (5)
+      console.log('Fetching hotels...');
+      const hotels = await searchPlaces('hotels in Brisbane', 'lodging');
+      allDestinations.push(...hotels.slice(0, 5));
+      
+      // Fetch Restaurants (5)
+      console.log('Fetching restaurants...');
+      const restaurants = await searchPlaces('restaurants in Brisbane', 'restaurant');
+      allDestinations.push(...restaurants.slice(0, 5));
+      
+      // Fetch Attractions (10)
+      console.log('Fetching attractions...');
+      const attractions = await searchPlaces('tourist attractions in Brisbane', 'tourist_attraction');
+      allDestinations.push(...attractions.slice(0, 10));
+      
+      console.log('All destinations fetched:', allDestinations);
+      setDestinations(allDestinations);
+    } catch (error) {
+      console.error('Error fetching places:', error);
+      // Fallback to mock data if API fails
+      console.log('Using mock data as fallback');
+      setDestinations(getMockDestinations());
+    }
+    setIsLoading(false);
+  };
+
+  const searchPlaces = async (query, type) => {
+    console.log(`Searching for: ${query} (type: ${type})`);
+    
+    try {
+      const response = await fetch(
+        'https://places.googleapis.com/v1/places:searchText',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.photos,places.editorialSummary'
+          },
+          body: JSON.stringify({
+            textQuery: query,
+            includedType: type,
+            locationBias: {
+              circle: {
+                center: {
+                  latitude: -27.4698,
+                  longitude: 153.0251
+                },
+                radius: 50000.0
+              }
+            },
+            maxResultCount: 10
+          })
+        }
+      );
+
+      console.log('API Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('API Response data:', data);
+      
+      return data.places?.map(place => ({
+        name: place.displayName?.text || 'Unknown Place',
+        description: place.editorialSummary?.text || 'Great place to visit in Brisbane',
+        rating: place.rating || 4.0,
+        price: getPriceText(place.priceLevel),
+        address: place.formattedAddress || 'Brisbane, QLD',
+        image: place.photos?.[0] ? 
+          `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxHeightPx=600&maxWidthPx=800&key=${GOOGLE_PLACES_API_KEY}` :
+          getDefaultImage(type)
+      })) || [];
+    } catch (error) {
+      console.error(`Error searching for ${query}:`, error);
+      return [];
+    }
+  };
+
+  const getPriceText = (priceLevel) => {
+    switch (priceLevel) {
+      case 'PRICE_LEVEL_FREE': return 'Free';
+      case 'PRICE_LEVEL_INEXPENSIVE': return 'AU$25';
+      case 'PRICE_LEVEL_MODERATE': return 'AU$50';
+      case 'PRICE_LEVEL_EXPENSIVE': return 'AU$100';
+      case 'PRICE_LEVEL_VERY_EXPENSIVE': return 'AU$150';
+      default: return 'AU$50';
+    }
+  };
+
+  const getDefaultImage = (type) => {
+    switch (type) {
+      case 'lodging': return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop';
+      case 'restaurant': return 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop';
+      default: return 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop';
+    }
+  };
+
+  const getMockDestinations = () => [
     {
       name: "Sunnybank Hotel",
       description: "Unassuming roadside property featuring a steakhouse with a sports bar, as well as free parking.",
@@ -56,128 +167,13 @@ const DestinationSelection = () => {
       price: "AU$35",
       address: "Lone Pine Sanctuary",
       image: "https://images.unsplash.com/photo-1459262838948-3e2de6c1ec80?w=800&h=600&fit=crop"
-    },
-    {
-      name: "South Bank Parklands",
-      description: "Contemporary art gallery featuring modern exhibitions and creative displays.",
-      rating: 4.3,
-      price: "AU$15",
-      address: "South Bank Parklands",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Mount Coot-tha Lookout",
-      description: "Stunning panoramic views of Brisbane city and surrounding landscapes.",
-      rating: 4.8,
-      price: "AU$12",
-      address: "Mount Coot-tha",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "GOMA Gallery",
-      description: "Interactive science museum with planetarium and educational exhibits.",
-      rating: 4.4,
-      price: "AU$20",
-      address: "Stanley Place",
-      image: "https://images.unsplash.com/photo-1565204189813-68fe0aa8c8be?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Brisbane Botanic Gardens",
-      description: "Beautiful botanical gardens with diverse plant collections and peaceful walks.",
-      rating: 4.7,
-      price: "AU$8",
-      address: "Brisbane Botanic Gardens",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Kangaroo Point Cliffs",
-      description: "Adventure climbing experience with breathtaking river and city views.",
-      rating: 4.9,
-      price: "AU$75",
-      address: "Kangaroo Point",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Eagle Street Pier",
-      description: "Vibrant dining and entertainment precinct along the Brisbane River.",
-      rating: 4.2,
-      price: "AU$50",
-      address: "Eagle Street Pier",
-      image: "https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Queen Street Mall",
-      description: "Premier shopping destination in the heart of Brisbane's CBD.",
-      rating: 4.1,
-      price: "AU$0",
-      address: "Queen Street Mall",
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Roma Street Parkland",
-      description: "Large parkland featuring gardens, lakes and recreational facilities.",
-      rating: 4.5,
-      price: "AU$6",
-      address: "Roma Street",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Fortitude Valley",
-      description: "Trendy entertainment district known for live music and nightlife.",
-      rating: 4.0,
-      price: "AU$30",
-      address: "Fortitude Valley",
-      image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&h=600&fit=crop"
-    },
-    {
-      name: "New Farm Park",
-      description: "Riverside park perfect for picnics, walks and outdoor activities.",
-      rating: 4.6,
-      price: "AU$5",
-      address: "New Farm Park",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Redcliffe Peninsula",
-      description: "Coastal peninsula offering beaches, seafood and seaside attractions.",
-      rating: 4.3,
-      price: "AU$40",
-      address: "Redcliffe Peninsula",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Moreton Island",
-      description: "World's third largest sand island with unique ecosystems and adventures.",
-      rating: 4.8,
-      price: "AU$120",
-      address: "Moreton Island",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Gold Coast Day Trip",
-      description: "Day trip to famous beaches, theme parks and coastal attractions.",
-      rating: 4.4,
-      price: "AU$85",
-      address: "Gold Coast",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Sunshine Coast Tour",
-      description: "Scenic coastal region with beaches, markets and natural beauty.",
-      rating: 4.7,
-      price: "AU$60",
-      address: "Sunshine Coast",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop"
-    },
-    {
-      name: "Lamington National Park",
-      description: "UNESCO World Heritage rainforest with hiking trails and wildlife.",
-      rating: 4.9,
-      price: "AU$25",
-      address: "Lamington National Park",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop"
     }
   ];
+
+  // Load destinations on component mount - FIXED: Now always calls Google API
+  useEffect(() => {
+    fetchPlacesFromGoogle();
+  }, []);
 
   const currentDestination = destinations[(currentSwipeCount - 1) % destinations.length];
 
@@ -275,6 +271,53 @@ const DestinationSelection = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="destination-selection">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading destinations from Google Places...</p>
+        </div>
+        <style jsx>{`
+          .destination-selection {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+          }
+          .loading-container {
+            text-align: center;
+          }
+          .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #324B86;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (!currentDestination) {
+    return (
+      <div className="destination-selection">
+        <div className="no-destinations">
+          <p>No destinations available</p>
+          <button onClick={() => navigate('/')}>Go Home</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="destination-selection">
       {/* Header */}
@@ -305,7 +348,13 @@ const DestinationSelection = () => {
           onTouchEnd={handleTouchEnd}
         >
           <div className="card-image">
-            <img src={currentDestination.image} alt={currentDestination.name} />
+            <img 
+              src={currentDestination.image} 
+              alt={currentDestination.name}
+              onError={(e) => {
+                e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop';
+              }}
+            />
           </div>
           
           <div className="card-content">
@@ -573,6 +622,19 @@ const DestinationSelection = () => {
         }
         .swipe-divider {
           color: #999;
+        }
+
+        .toast {
+          position: fixed;
+          bottom: 100px;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: rgba(0,0,0,0.8);
+          color: white;
+          padding: 12px 24px;
+          border-radius: 20px;
+          z-index: 1000;
+          font-size: 14px;
         }
 
         @media (max-width: 480px) {

@@ -15,158 +15,208 @@ const HomeScreen = () => {
 
   return (
     <div className="home-screen">
-      {/* Header */}
-      <div className="header">
-        <h1 className="app-title">CoTrip</h1>
-        <button className="settings-btn">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
-          </svg>
-        </button>
-      </div>
+      {/* Centered Content */}
+      <div className="centered-content">
+        {/* Centered Header */}
+        <div className="header-content">
+          <h1 className="app-title">CoTrip</h1>
+          <p className="app-subtitle">Plan your perfect Brisbane adventure</p>
+        </div>
+        
+        {/* Main Content */}
+        <div className="main-content">
+          {/* Create Trip Card */}
+          <div className="content-card">
+            <h2 className="card-title">Ready to explore Brisbane?</h2>
+            <p className="card-text">
+              Discover amazing hotels, restaurants, and attractions
+            </p>
+            <button className="action-button primary" onClick={handleCreatePlan}>
+              Create New Trip Plan
+            </button>
+          </div>
 
-      {/* Main Content */}
-      <div className="main-content">
-        {/* Create Trip Card */}
-        <div className="feature-card" onClick={handleCreatePlan}>
-          <div className="card-content">
-            <div className="go-chip">Go</div>
-            <div className="card-text">
-              <h2>Create new trip plan</h2>
-              <p>Start a collaborative itinerary</p>
-            </div>
+          {/* Join Team Card */}
+          <div className="content-card">
+            <h2 className="card-title">Join a team</h2>
+            <p className="card-text">
+              Enter a code or accept an invite
+            </p>
+            <button className="action-button secondary" onClick={handleJoinTeam}>
+              Join Team
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Join Team Card */}
-        <div className="feature-card" onClick={handleJoinTeam}>
-          <div className="card-content">
-            <div className="go-chip">Go</div>
-            <div className="card-text">
-              <h2>Join a team</h2>
-              <p>Enter a code or accept an invite</p>
-            </div>
-          </div>
+      {/* Bottom Navigation Bar */}
+      <div className="bottom-nav">
+        <div className="nav-item active">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span>Home</span>
+        </div>
+        <div className="nav-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+          </svg>
+          <span>Discover</span>
+        </div>
+        <div className="nav-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span>Profile</span>
         </div>
       </div>
 
       <style jsx>{`
         .home-screen {
           height: 100vh;
-          background-color: #F5F5F5;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           display: flex;
           flex-direction: column;
+          font-family: system-ui, -apple-system, sans-serif;
         }
 
-        .header {
+        .centered-content {
+          flex: 1;
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
+          justify-content: center;
           align-items: center;
-          padding: 12px 16px;
-          background-color: white;
+          padding: 20px;
+        }
+
+        .header-content {
+          text-align: center;
+          margin-bottom: 40px;
         }
 
         .app-title {
-          font-size: 28px;
-          font-weight: 800;
+          font-size: 48px;
+          font-weight: 700;
+          color: white;
           margin: 0;
-          color: #000;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        .settings-btn {
-          background: none;
-          border: none;
-          padding: 8px;
-          cursor: pointer;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .settings-btn:hover {
-          background-color: rgba(0, 0, 0, 0.1);
+        .app-subtitle {
+          font-size: 18px;
+          color: rgba(255,255,255,0.9);
+          margin: 10px 0 0 0;
         }
 
         .main-content {
-          padding: 16px;
-          flex: 1;
-        }
-
-        .feature-card {
           width: 100%;
-          height: 170px;
-          background: linear-gradient(135deg, #324B86 0%, #6BA4FF 100%);
-          border-radius: 16px;
-          margin-bottom: 12px;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          transition: transform 0.2s ease;
-          user-select: none;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-2px);
-        }
-
-        .feature-card:active {
-          transform: translateY(0);
-        }
-
-        .card-content {
-          height: 100%;
-          position: relative;
-          padding: 16px;
+          max-width: 400px;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          gap: 16px;
         }
 
-        .go-chip {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background-color: rgba(255, 255, 255, 0.2);
-          color: white;
-          padding: 6px 16px;
-          border-radius: 16px;
-          font-size: 14px;
-          font-weight: 500;
-          backdrop-filter: blur(10px);
+        .content-card {
+          background-color: white;
+          border-radius: 20px;
+          padding: 30px;
+          text-align: center;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-title {
+          font-size: 24px;
+          font-weight: 600;
+          color: #333;
+          margin: 0 0 15px 0;
         }
 
         .card-text {
-          margin-top: auto;
+          font-size: 16px;
+          color: #666;
+          margin: 0 0 25px 0;
+          line-height: 1.5;
         }
 
-        .card-text h2 {
+        .action-button {
+          width: 100%;
+          padding: 15px;
+          border: none;
+          border-radius: 12px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .action-button.primary {
+          background-color: #667eea;
           color: white;
-          font-size: 20px;
-          font-weight: 700;
-          margin: 0 0 6px 0;
-          line-height: 1.2;
         }
 
-        .card-text p {
-          color: rgba(255, 255, 255, 0.9);
-          font-size: 14px;
-          margin: 0;
-          line-height: 1.4;
+        .action-button.primary:hover {
+          background-color: #5a6fd8;
+          transform: translateY(-1px);
+        }
+
+        .action-button.secondary {
+          background-color: #764ba2;
+          color: white;
+        }
+
+        .action-button.secondary:hover {
+          background-color: #663d91;
+          transform: translateY(-1px);
+        }
+
+        .bottom-nav {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          background-color: white;
+          padding: 8px 0;
+          border-top: 1px solid #e0e0e0;
+        }
+
+        .nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 8px 16px;
+          cursor: pointer;
+          color: #666;
+          font-size: 12px;
+          font-weight: 500;
+          transition: color 0.2s ease;
+        }
+
+        .nav-item.active {
+          color: #667eea;
+        }
+
+        .nav-item svg {
+          margin-bottom: 4px;
+        }
+
+        .nav-item:hover {
+          color: #667eea;
         }
 
         @media (max-width: 480px) {
-          .header {
-            padding: 8px 12px;
+          .app-title {
+            font-size: 40px;
           }
           
-          .app-title {
-            font-size: 24px;
+          .app-subtitle {
+            font-size: 16px;
           }
           
           .main-content {
-            padding: 12px;
+            padding: 0 10px;
+          }
+          
+          .content-card {
+            padding: 25px 20px;
           }
         }
       `}</style>
