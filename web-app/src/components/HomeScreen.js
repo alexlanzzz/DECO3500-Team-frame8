@@ -15,38 +15,20 @@ const HomeScreen = () => {
 
   return (
     <div className="home-screen">
-      {/* Centered Content */}
-      <div className="centered-content">
-        {/* Centered Header */}
-        <div className="header-content">
-          <h1 className="app-title">CoTrip</h1>
-          <p className="app-subtitle">Plan your perfect Brisbane adventure</p>
-        </div>
+      {/* Header */}
+      <div className="header">
+        <h1 className="app-title">CoTrip</h1>
+      </div>
+      
+      {/* Main Content */}
+      <div className="main-content">
+        <button className="create-trip-button" onClick={handleCreatePlan}>
+          Create a new trip!
+        </button>
         
-        {/* Main Content */}
-        <div className="main-content">
-          {/* Create Trip Card */}
-          <div className="content-card">
-            <h2 className="card-title">Ready to explore Brisbane?</h2>
-            <p className="card-text">
-              Discover amazing hotels, restaurants, and attractions
-            </p>
-            <button className="action-button primary" onClick={handleCreatePlan}>
-              Create New Trip Plan
-            </button>
-          </div>
-
-          {/* Join Team Card */}
-          <div className="content-card">
-            <h2 className="card-title">Join a team</h2>
-            <p className="card-text">
-              Enter a code or accept an invite
-            </p>
-            <button className="action-button secondary" onClick={handleJoinTeam}>
-              Join Team
-            </button>
-          </div>
-        </div>
+        <button className="join-team-button" onClick={handleJoinTeam}>
+          Join a team
+        </button>
       </div>
 
       {/* Bottom Navigation Bar */}
@@ -59,9 +41,10 @@ const HomeScreen = () => {
         </div>
         <div className="nav-item">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
-          <span>Discover</span>
+          <span>My Journey</span>
         </div>
         <div className="nav-item">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -74,99 +57,80 @@ const HomeScreen = () => {
       <style jsx>{`
         .home-screen {
           height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background-color: white;
           display: flex;
           flex-direction: column;
-          font-family: system-ui, -apple-system, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         }
 
-        .centered-content {
+        .header {
+          padding: 40px 20px 20px;
+          text-align: center;
+        }
+
+        .app-title {
+          font-size: 48px;
+          font-weight: 700;
+          color: black;
+          margin: 0;
+        }
+
+        .main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
           padding: 20px;
+          gap: 40px;
         }
 
-        .header-content {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .app-title {
-          font-size: 48px;
-          font-weight: 700;
+        .create-trip-button {
+          width: 100%;
+          max-width: 350px;
+          padding: 20px 40px;
+          background-color: #F4A460;
           color: white;
-          margin: 0;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .app-subtitle {
-          font-size: 18px;
-          color: rgba(255,255,255,0.9);
-          margin: 10px 0 0 0;
-        }
-
-        .main-content {
-          width: 100%;
-          max-width: 400px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .content-card {
-          background-color: white;
-          border-radius: 20px;
-          padding: 30px;
-          text-align: center;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .card-title {
-          font-size: 24px;
-          font-weight: 600;
-          color: #333;
-          margin: 0 0 15px 0;
-        }
-
-        .card-text {
-          font-size: 16px;
-          color: #666;
-          margin: 0 0 25px 0;
-          line-height: 1.5;
-        }
-
-        .action-button {
-          width: 100%;
-          padding: 15px;
           border: none;
-          border-radius: 12px;
-          font-size: 16px;
+          border-radius: 50px;
+          font-size: 20px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 4px 15px rgba(244, 164, 96, 0.3);
         }
 
-        .action-button.primary {
-          background-color: #667eea;
+        .create-trip-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(244, 164, 96, 0.4);
+        }
+
+        .create-trip-button:active {
+          transform: translateY(0);
+        }
+
+        .join-team-button {
+          width: 100%;
+          max-width: 280px;
+          padding: 16px 32px;
+          background-color: #F4A460;
           color: white;
+          border: none;
+          border-radius: 50px;
+          font-size: 18px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 4px 15px rgba(244, 164, 96, 0.3);
         }
 
-        .action-button.primary:hover {
-          background-color: #5a6fd8;
-          transform: translateY(-1px);
+        .join-team-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(244, 164, 96, 0.4);
         }
 
-        .action-button.secondary {
-          background-color: #764ba2;
-          color: white;
-        }
-
-        .action-button.secondary:hover {
-          background-color: #663d91;
-          transform: translateY(-1px);
+        .join-team-button:active {
+          transform: translateY(0);
         }
 
         .bottom-nav {
@@ -174,8 +138,8 @@ const HomeScreen = () => {
           justify-content: space-around;
           align-items: center;
           background-color: white;
-          padding: 8px 0;
-          border-top: 1px solid #e0e0e0;
+          padding: 12px 0 20px;
+          border-top: 1px solid #f0f0f0;
         }
 
         .nav-item {
@@ -184,14 +148,14 @@ const HomeScreen = () => {
           align-items: center;
           padding: 8px 16px;
           cursor: pointer;
-          color: #666;
+          color: #999;
           font-size: 12px;
           font-weight: 500;
           transition: color 0.2s ease;
         }
 
         .nav-item.active {
-          color: #667eea;
+          color: #007AFF;
         }
 
         .nav-item svg {
@@ -199,7 +163,7 @@ const HomeScreen = () => {
         }
 
         .nav-item:hover {
-          color: #667eea;
+          color: #007AFF;
         }
 
         @media (max-width: 480px) {
@@ -207,16 +171,23 @@ const HomeScreen = () => {
             font-size: 40px;
           }
           
-          .app-subtitle {
-            font-size: 16px;
+          .header {
+            padding: 30px 20px 15px;
           }
           
           .main-content {
-            padding: 0 10px;
+            gap: 30px;
+            padding: 15px;
           }
           
-          .content-card {
-            padding: 25px 20px;
+          .create-trip-button {
+            font-size: 18px;
+            padding: 18px 36px;
+          }
+          
+          .join-team-button {
+            font-size: 16px;
+            padding: 14px 28px;
           }
         }
       `}</style>
