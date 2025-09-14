@@ -6,6 +6,11 @@ const PlanNewTrip = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showInviteFriends, setShowInviteFriends] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerType, setDatePickerType] = useState('start'); // 'start' or 'end'
+  const [selectedDate, setSelectedDate] = useState('');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [inviteEmail, setInviteEmail] = useState('');
   const [privacy, setPrivacy] = useState('private');
 
   const handleStartPlanning = () => {
@@ -15,6 +20,77 @@ const PlanNewTrip = () => {
   const handleBack = () => {
     navigate('/');
   };
+
+  const handleDateClick = (type) => {
+    setDatePickerType(type);
+    setSelectedDate(type === 'start' ? startDate : endDate);
+    setShowDatePicker(true);
+  };
+
+  const handleDateSave = () => {
+    if (datePickerType === 'start') {
+      setStartDate(selectedDate);
+    } else {
+      setEndDate(selectedDate);
+    }
+    setShowDatePicker(false);
+  };
+
+  const handleDateCancel = () => {
+    setSelectedDate('');
+    setShowDatePicker(false);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const generateCalendar = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    const days = [];
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      days.push(date);
+    }
+    return days;
+  };
+
+  const isDateSelected = (date) => {
+    const dateString = date.toISOString().split('T')[0];
+    return selectedDate === dateString;
+  };
+
+  const isCurrentMonth = (date) => {
+    return date.getMonth() === currentMonth.getMonth();
+  };
+
+  const handleInviteEmailSubmit = () => {
+    if (inviteEmail.trim()) {
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail('');
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText('https://cotrip.app/invite/xyz123');
+    alert('Invite link copied to clipboard!');
+  };
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="plan-new-trip">
@@ -47,14 +123,7 @@ const PlanNewTrip = () => {
         <div className="date-section">
           <h3 className="section-title">Dates (optional)</h3>
           <div className="date-inputs">
-            <div className="date-input-container">
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="date-input"
-                placeholder="Start date"
-              />
+            <div className="date-input-container" onClick={() => handleDateClick('start')}>
               <div className="date-placeholder">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -62,18 +131,11 @@ const PlanNewTrip = () => {
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                <span>{startDate || 'Start date'}</span>
+                <span>{formatDate(startDate) || 'Start date'}</span>
               </div>
             </div>
 
-            <div className="date-input-container">
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="date-input"
-                placeholder="End date"
-              />
+            <div className="date-input-container" onClick={() => handleDateClick('end')}>
               <div className="date-placeholder">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -81,7 +143,7 @@ const PlanNewTrip = () => {
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                <span>{endDate || 'End date'}</span>
+                <span>{formatDate(endDate) || 'End date'}</span>
               </div>
             </div>
           </div>
@@ -123,6 +185,112 @@ const PlanNewTrip = () => {
           Start planning
         </button>
       </div>
+
+      {/* Date Picker Popup */}
+      {showDatePicker && (
+        <div className="popup-overlay" onClick={handleDateCancel}>
+          <div className="date-picker-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="date-picker-header">
+              <button
+                className="month-nav"
+                onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}
+              >
+                ‹
+              </button>
+              <span className="month-year">
+                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </span>
+              <button
+                className="month-nav"
+                onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}
+              >
+                ›
+              </button>
+            </div>
+
+            <div className="calendar-grid">
+              <div className="day-names">
+                {dayNames.map(day => (
+                  <div key={day} className={`day-name ${day === 'Sun' || day === 'Sat' ? 'weekend' : ''}`}>
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div className="calendar-dates">
+                {generateCalendar().map((date, index) => (
+                  <button
+                    key={index}
+                    className={`calendar-date ${
+                      !isCurrentMonth(date) ? 'other-month' : ''
+                    } ${isDateSelected(date) ? 'selected' : ''}`}
+                    onClick={() => setSelectedDate(date.toISOString().split('T')[0])}
+                  >
+                    {date.getDate()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="date-picker-actions">
+              <button className="date-action cancel" onClick={handleDateCancel}>
+                Cancel
+              </button>
+              <button className="date-action save" onClick={handleDateSave}>
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Friends Popup */}
+      {showInviteFriends && (
+        <div className="popup-overlay" onClick={() => setShowInviteFriends(false)}>
+          <div className="invite-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="invite-header">
+              <h3>Invite your friends</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowInviteFriends(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="invite-content">
+              <div className="email-input-section">
+                <input
+                  type="email"
+                  placeholder="Enter an email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="email-input"
+                />
+                <button className="send-invite-btn" onClick={handleInviteEmailSubmit}>
+                  Send
+                </button>
+              </div>
+
+              <div className="invite-option" onClick={() => alert('Contact search coming soon!')}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Search from your contact</span>
+              </div>
+
+              <div className="invite-option" onClick={handleCopyLink}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                <span>Copy link</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .plan-new-trip {
@@ -230,15 +398,6 @@ const PlanNewTrip = () => {
           position: relative;
         }
 
-        .date-input {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          cursor: pointer;
-        }
 
         .date-placeholder {
           display: flex;
@@ -385,6 +544,261 @@ const PlanNewTrip = () => {
             flex-direction: column;
             gap: 12px;
           }
+        }
+
+        /* Popup Styles */
+        .popup-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
+        }
+
+        /* Date Picker Popup */
+        .date-picker-popup {
+          background: white;
+          border-radius: 16px;
+          padding: 20px;
+          max-width: 320px;
+          width: 100%;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .date-picker-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        }
+
+        .month-nav {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .month-nav:hover {
+          background-color: #f0f0f0;
+        }
+
+        .month-year {
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .calendar-grid {
+          margin-bottom: 20px;
+        }
+
+        .day-names {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 4px;
+          margin-bottom: 8px;
+        }
+
+        .day-name {
+          text-align: center;
+          font-size: 12px;
+          font-weight: 600;
+          color: #666;
+          padding: 8px 0;
+        }
+
+        .day-name.weekend {
+          color: #ff6b6b;
+        }
+
+        .calendar-dates {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 4px;
+        }
+
+        .calendar-date {
+          aspect-ratio: 1;
+          border: none;
+          background: none;
+          cursor: pointer;
+          border-radius: 8px;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .calendar-date:hover {
+          background-color: #f0f0f0;
+        }
+
+        .calendar-date.other-month {
+          color: #ccc;
+        }
+
+        .calendar-date.selected {
+          background-color: #6366f1;
+          color: white;
+        }
+
+        .date-picker-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+        }
+
+        .date-action {
+          padding: 8px 20px;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .date-action.cancel {
+          background: none;
+          color: #666;
+        }
+
+        .date-action.cancel:hover {
+          background-color: #f0f0f0;
+        }
+
+        .date-action.save {
+          background-color: #6366f1;
+          color: white;
+        }
+
+        .date-action.save:hover {
+          background-color: #5856eb;
+        }
+
+        /* Invite Friends Popup */
+        .invite-popup {
+          background: white;
+          border-radius: 16px;
+          padding: 0;
+          max-width: 400px;
+          width: 100%;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+          overflow: hidden;
+        }
+
+        .invite-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .invite-header h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #666;
+        }
+
+        .close-btn:hover {
+          background-color: #f0f0f0;
+        }
+
+        .invite-content {
+          padding: 20px;
+        }
+
+        .email-input-section {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+
+        .email-input {
+          flex: 1;
+          padding: 12px 16px;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          font-size: 16px;
+          outline: none;
+          transition: border-color 0.2s ease;
+        }
+
+        .email-input:focus {
+          border-color: #6366f1;
+        }
+
+        .send-invite-btn {
+          padding: 12px 20px;
+          background-color: #6366f1;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+
+        .send-invite-btn:hover {
+          background-color: #5856eb;
+        }
+
+        .invite-option {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: background-color 0.2s ease;
+          margin-bottom: 8px;
+        }
+
+        .invite-option:hover {
+          background-color: #f8f9ff;
+        }
+
+        .invite-option svg {
+          color: #666;
+          flex-shrink: 0;
+        }
+
+        .invite-option span {
+          font-size: 16px;
+          color: #333;
         }
       `}</style>
     </div>
