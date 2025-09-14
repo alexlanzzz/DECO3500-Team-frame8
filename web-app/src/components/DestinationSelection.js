@@ -20,6 +20,48 @@ const DestinationSelection = () => {
   // Your Google Places API key
   const GOOGLE_PLACES_API_KEY = 'AIzaSyCu1wvtBH6Lmgr-eqVfKTU76Sm6oNSMnJo';
 
+  // LocalStorage keys
+const LS_JOURNEY_KEY = "frame8.myJourney.v1";
+const LS_VOTE_KEY    = "frame8.votes.v1"; // { interested:[], notInterested:[] }
+
+// Helpers to safely read/write JSON from localStorage
+function readJSON(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+function writeJSON(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+/** Save a vote (interested or notInterested) */
+function recordVote(place, interested) {
+  const data = readJSON(LS_VOTE_KEY, { interested: [], notInterested: [] });
+  const bucket = interested ? "interested" : "notInterested";
+  // Simple deduplication using name+address key
+  const key = `${place.name}__${place.address}`;
+  const exists = (arr) => arr.some(x => `${x.name}__${x.address}` === key);
+  if (!exists(data[bucket])) {
+    data[bucket].push({ ...place, votedAt: new Date().toISOString() });
+  }
+  writeJSON(LS_VOTE_KEY, data);
+}
+
+/** Add a place to the journey (only for "interested" swipes) */
+function addToJourney(place) {
+  const journey = readJSON(LS_JOURNEY_KEY, []);
+  // Prevent duplicates based on name+address
+  const key = `${place.name}__${place.address}`;
+  const exists = journey.some(x => `${x.name}__${x.address}` === key);
+  if (!exists) {
+    journey.push({
+      ...place,
+      addedAt: new Date().toISOString()
+      // Optionally include fields like start/end time or day here
+    });
+    writeJSON(LS_JOURNEY_KEY, journey);
+  }
+}
+
   // Fetch places from Google Places API
   const fetchPlacesFromGoogle = useCallback(async () => {
     console.log('Starting to fetch places from Google API...');
@@ -203,9 +245,14 @@ const DestinationSelection = () => {
       card.style.opacity = '0';
       
       setTimeout(() => {
-        if (direction === 'right') {
+         if (direction === 'right') {
+          // Right swipe: record as "interested" and add to journey
+          recordVote(currentDestination, true);
+          addToJourney(currentDestination);
           showToast('Added to your trip!');
         } else {
+          // Left swipe: record as "not interested"
+          recordVote(currentDestination, false);
           showToast('Not interested');
         }
         
