@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import infoIcon from '../assets/icons/info.png';
 import purseIcon from '../assets/icons/purse.png';
@@ -21,7 +21,7 @@ const DestinationSelection = () => {
   const GOOGLE_PLACES_API_KEY = 'AIzaSyCu1wvtBH6Lmgr-eqVfKTU76Sm6oNSMnJo';
 
   // Fetch places from Google Places API
-  const fetchPlacesFromGoogle = async () => {
+  const fetchPlacesFromGoogle = useCallback(async () => {
     console.log('Starting to fetch places from Google API...');
     setIsLoading(true);
     try {
@@ -51,7 +51,7 @@ const DestinationSelection = () => {
       setDestinations(getMockDestinations());
     }
     setIsLoading(false);
-  };
+  }, []);
 
   const searchPlaces = async (query, type) => {
     console.log(`Searching for: ${query} (type: ${type})`);
@@ -173,7 +173,7 @@ const DestinationSelection = () => {
   // Load destinations on component mount - FIXED: Now always calls Google API
   useEffect(() => {
     fetchPlacesFromGoogle();
-  }, []);
+  }, [fetchPlacesFromGoogle]);
 
   const currentDestination = destinations[(currentSwipeCount - 1) % destinations.length];
 
