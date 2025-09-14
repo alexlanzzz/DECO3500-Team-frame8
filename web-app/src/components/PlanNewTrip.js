@@ -12,7 +12,7 @@ const PlanNewTrip = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [inviteEmail, setInviteEmail] = useState('');
   const [privacy, setPrivacy] = useState('private');
-  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [invitedFriends, setInvitedFriends] = useState([]);
 
   const handleStartPlanning = () => {
     navigate('/destinations');
@@ -89,17 +89,14 @@ const PlanNewTrip = () => {
     alert('Invite link copied to clipboard!');
   };
 
-  const handlePrivacySelect = (option) => {
-    setPrivacy(option);
-    setShowPrivacySettings(false);
-  };
 
-  const getPrivacyDisplayText = () => {
-    switch (privacy) {
-      case 'public': return 'Public';
-      case 'friends': return 'Friends';
-      case 'private': return 'Private';
-      default: return 'Privacy';
+  const handleFriendInvite = (friendId, friendName) => {
+    if (invitedFriends.includes(friendId)) {
+      setInvitedFriends(invitedFriends.filter(id => id !== friendId));
+      alert(`${friendName} removed from trip`);
+    } else {
+      setInvitedFriends([...invitedFriends, friendId]);
+      alert(`${friendName} invited to trip!`);
     }
   };
 
@@ -166,6 +163,43 @@ const PlanNewTrip = () => {
 
         {/* Options Section */}
         <div className="options-section">
+          {/* Privacy Section - Moved to top left */}
+          <div className="privacy-section-inline">
+            <h3 className="privacy-title">Privacy</h3>
+            <div className="privacy-options-inline">
+              <label className={`privacy-radio ${privacy === 'public' ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  value="public"
+                  checked={privacy === 'public'}
+                  onChange={(e) => setPrivacy(e.target.value)}
+                />
+                <span className="radio-custom"></span>
+                Public
+              </label>
+              <label className={`privacy-radio ${privacy === 'friends' ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  value="friends"
+                  checked={privacy === 'friends'}
+                  onChange={(e) => setPrivacy(e.target.value)}
+                />
+                <span className="radio-custom"></span>
+                Friends
+              </label>
+              <label className={`privacy-radio ${privacy === 'private' ? 'selected' : ''}`}>
+                <input
+                  type="radio"
+                  value="private"
+                  checked={privacy === 'private'}
+                  onChange={(e) => setPrivacy(e.target.value)}
+                />
+                <span className="radio-custom"></span>
+                Private
+              </label>
+            </div>
+          </div>
+
           <button
             className="option-button"
             onClick={() => setShowInviteFriends(!showInviteFriends)}
@@ -174,14 +208,43 @@ const PlanNewTrip = () => {
             <span>Invite your friends</span>
           </button>
 
-          <div className="privacy-section">
-            <div className="privacy-dropdown" onClick={() => setShowPrivacySettings(true)}>
-              <div className="dropdown-display">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6"/>
-                </svg>
-                <span>{getPrivacyDisplayText()}</span>
+          {/* Default Friends List */}
+          <div className="friends-list">
+            <div className="friend-item" onClick={() => handleFriendInvite('alice', 'Alice')}>
+              <div className={`friend-avatar friend-1 ${invitedFriends.includes('alice') ? 'invited' : ''}`}>
+                A
+                {invitedFriends.includes('alice') && (
+                  <div className="invite-check">✓</div>
+                )}
               </div>
+              <span className="friend-name">Alice</span>
+            </div>
+            <div className="friend-item" onClick={() => handleFriendInvite('bob', 'Bob')}>
+              <div className={`friend-avatar friend-2 ${invitedFriends.includes('bob') ? 'invited' : ''}`}>
+                B
+                {invitedFriends.includes('bob') && (
+                  <div className="invite-check">✓</div>
+                )}
+              </div>
+              <span className="friend-name">Bob</span>
+            </div>
+            <div className="friend-item" onClick={() => handleFriendInvite('charlie', 'Charlie')}>
+              <div className={`friend-avatar friend-3 ${invitedFriends.includes('charlie') ? 'invited' : ''}`}>
+                C
+                {invitedFriends.includes('charlie') && (
+                  <div className="invite-check">✓</div>
+                )}
+              </div>
+              <span className="friend-name">Charlie</span>
+            </div>
+            <div className="friend-item" onClick={() => handleFriendInvite('diana', 'Diana')}>
+              <div className={`friend-avatar friend-4 ${invitedFriends.includes('diana') ? 'invited' : ''}`}>
+                D
+                {invitedFriends.includes('diana') && (
+                  <div className="invite-check">✓</div>
+                )}
+              </div>
+              <span className="friend-name">Diana</span>
             </div>
           </div>
         </div>
@@ -301,63 +364,6 @@ const PlanNewTrip = () => {
         </div>
       )}
 
-      {/* Privacy Settings Popup */}
-      {showPrivacySettings && (
-        <div className="popup-overlay" onClick={() => setShowPrivacySettings(false)}>
-          <div className="privacy-popup" onClick={(e) => e.stopPropagation()}>
-            <div className="privacy-header">
-              <h3>Privacy settings</h3>
-              <button
-                className="close-btn"
-                onClick={() => setShowPrivacySettings(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="privacy-options">
-              <div
-                className={`privacy-option ${privacy === 'public' ? 'selected' : ''}`}
-                onClick={() => handlePrivacySelect('public')}
-              >
-                <div className="privacy-option-content">
-                  <h4>Public</h4>
-                  <p>Anyone can view</p>
-                </div>
-                {privacy === 'public' && (
-                  <div className="check-icon">✓</div>
-                )}
-              </div>
-
-              <div
-                className={`privacy-option ${privacy === 'friends' ? 'selected' : ''}`}
-                onClick={() => handlePrivacySelect('friends')}
-              >
-                <div className="privacy-option-content">
-                  <h4>Friends</h4>
-                  <p>Users who you follow and who follow you back can view</p>
-                </div>
-                {privacy === 'friends' && (
-                  <div className="check-icon">✓</div>
-                )}
-              </div>
-
-              <div
-                className={`privacy-option ${privacy === 'private' ? 'selected' : ''}`}
-                onClick={() => handlePrivacySelect('private')}
-              >
-                <div className="privacy-option-content">
-                  <h4>Private</h4>
-                  <p>Only you and others with the link can view</p>
-                </div>
-                {privacy === 'private' && (
-                  <div className="check-icon">✓</div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         .plan-new-trip {
@@ -500,6 +506,74 @@ const PlanNewTrip = () => {
           width: 100%;
         }
 
+        /* Inline Privacy Section */
+        .privacy-section-inline {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+
+        .privacy-title {
+          font-size: 18px;
+          font-weight: 500;
+          color: #333;
+          margin: 0 0 12px 0;
+        }
+
+        .privacy-options-inline {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+        }
+
+        .privacy-radio {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          font-size: 16px;
+          color: #666;
+          transition: color 0.2s ease;
+        }
+
+        .privacy-radio.selected {
+          color: #6366f1;
+          font-weight: 500;
+        }
+
+        .privacy-radio input[type="radio"] {
+          display: none;
+        }
+
+        .radio-custom {
+          width: 16px;
+          height: 16px;
+          border: 2px solid #ccc;
+          border-radius: 50%;
+          position: relative;
+          transition: all 0.2s ease;
+        }
+
+        .privacy-radio.selected .radio-custom {
+          border-color: #6366f1;
+          background-color: #6366f1;
+        }
+
+        .privacy-radio.selected .radio-custom::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 6px;
+          height: 6px;
+          background-color: white;
+          border-radius: 50%;
+        }
+
+        .privacy-radio:hover .radio-custom {
+          border-color: #6366f1;
+        }
+
         .option-button {
           display: flex;
           align-items: center;
@@ -519,32 +593,6 @@ const PlanNewTrip = () => {
           font-weight: 300;
         }
 
-        .privacy-section {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-        }
-
-        .privacy-dropdown {
-          position: relative;
-        }
-
-
-        .dropdown-display {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          background: none;
-          border: none;
-          font-size: 16px;
-          color: #666;
-          cursor: pointer;
-        }
-
-        .dropdown-display svg {
-          color: #999;
-        }
 
         .start-planning-btn {
           width: 100%;
@@ -874,96 +922,108 @@ const PlanNewTrip = () => {
           color: #333;
         }
 
-        /* Privacy Settings Popup */
-        .privacy-popup {
-          background: white;
-          border-radius: 16px;
-          padding: 0;
-          max-width: 400px;
-          width: 100%;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-          overflow: hidden;
-        }
 
-        .privacy-header {
+        /* Friends List Styles */
+        .friends-list {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 20px;
-          border-bottom: 1px solid #f0f0f0;
+          gap: 16px;
+          margin-top: 20px;
+          padding: 0 4px;
         }
 
-        .privacy-header h3 {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .privacy-options {
-          padding: 20px;
-        }
-
-        .privacy-option {
+        .friend-item {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: space-between;
-          padding: 16px;
           cursor: pointer;
-          border-radius: 8px;
           transition: all 0.2s ease;
-          margin-bottom: 8px;
-          border: 2px solid transparent;
         }
 
-        .privacy-option:hover {
-          background-color: #f8f9ff;
+        .friend-item:hover {
+          transform: translateY(-2px);
         }
 
-        .privacy-option.selected {
-          background-color: #f0f4ff;
-          border-color: #6366f1;
-        }
-
-        .privacy-option-content {
-          flex: 1;
-        }
-
-        .privacy-option h4 {
-          margin: 0 0 4px 0;
-          font-size: 16px;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .privacy-option p {
-          margin: 0;
-          font-size: 14px;
-          color: #666;
-          line-height: 1.4;
-        }
-
-        .check-icon {
-          width: 24px;
-          height: 24px;
-          background-color: #6366f1;
-          color: white;
+        .friend-avatar {
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 14px;
+          font-size: 18px;
+          font-weight: 600;
+          color: white;
+          margin-bottom: 8px;
+          transition: all 0.2s ease;
+          position: relative;
+          border: 3px solid transparent;
+        }
+
+        .friend-avatar:hover {
+          transform: scale(1.1);
+        }
+
+        .friend-1 {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .friend-2 {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .friend-3 {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .friend-4 {
+          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .friend-avatar.invited {
+          border-color: #4CAF50;
+          box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .invite-check {
+          position: absolute;
+          bottom: -2px;
+          right: -2px;
+          width: 20px;
+          height: 20px;
+          background-color: #4CAF50;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
           font-weight: bold;
-          margin-left: 12px;
-          flex-shrink: 0;
+          color: white;
+          border: 2px solid white;
         }
 
-        .privacy-dropdown {
-          cursor: pointer;
+        .friend-name {
+          font-size: 12px;
+          font-weight: 500;
+          color: #666;
+          text-align: center;
         }
 
-        .dropdown-display:hover {
-          color: #6366f1;
+        @media (max-width: 480px) {
+          .friends-list {
+            gap: 12px;
+            margin-top: 16px;
+          }
+
+          .friend-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            margin-bottom: 6px;
+          }
+
+          .friend-name {
+            font-size: 11px;
+          }
         }
       `}</style>
     </div>
