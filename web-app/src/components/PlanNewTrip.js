@@ -569,6 +569,21 @@ const PlanNewTrip = () => {
           transform: translateY(0);
         }
 
+        .start-planning-btn.active {
+          background-color: #F4A460;
+          box-shadow: 0 4px 15px rgba(244, 164, 96, 0.3);
+        }
+
+        .start-planning-btn.active:hover {
+          background-color: #F19A3E;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(244, 164, 96, 0.4);
+        }
+
+        .start-planning-btn.active:active {
+          transform: translateY(0);
+        }
+
         @media (max-width: 480px) {
           .header {
             padding: 16px;
