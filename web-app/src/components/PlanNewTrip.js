@@ -188,7 +188,7 @@ const PlanNewTrip = () => {
 
         {/* Start Planning Button */}
         <button
-          className={`start-planning-btn ${(startDate || endDate) ? 'active' : ''}`}
+          className={`start-planning-btn ${(startDate && endDate) ? 'active' : ''}`}
           onClick={handleStartPlanning}
         >
           Start planning
