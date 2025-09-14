@@ -12,6 +12,7 @@ const PlanNewTrip = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [inviteEmail, setInviteEmail] = useState('');
   const [privacy, setPrivacy] = useState('private');
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
 
   const handleStartPlanning = () => {
     navigate('/destinations');
@@ -88,6 +89,20 @@ const PlanNewTrip = () => {
     alert('Invite link copied to clipboard!');
   };
 
+  const handlePrivacySelect = (option) => {
+    setPrivacy(option);
+    setShowPrivacySettings(false);
+  };
+
+  const getPrivacyDisplayText = () => {
+    switch (privacy) {
+      case 'public': return 'Public';
+      case 'friends': return 'Friends';
+      case 'private': return 'Private';
+      default: return 'Privacy';
+    }
+  };
+
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -160,28 +175,22 @@ const PlanNewTrip = () => {
           </button>
 
           <div className="privacy-section">
-            <div className="privacy-dropdown">
-              <select
-                value={privacy}
-                onChange={(e) => setPrivacy(e.target.value)}
-                className="privacy-select"
-              >
-                <option value="private">Private</option>
-                <option value="public">Public</option>
-                <option value="friends">Friends Only</option>
-              </select>
+            <div className="privacy-dropdown" onClick={() => setShowPrivacySettings(true)}>
               <div className="dropdown-display">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6"/>
                 </svg>
-                <span>Privacy</span>
+                <span>{getPrivacyDisplayText()}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Start Planning Button */}
-        <button className="start-planning-btn" onClick={handleStartPlanning}>
+        <button
+          className={`start-planning-btn ${(startDate || endDate) ? 'active' : ''}`}
+          onClick={handleStartPlanning}
+        >
           Start planning
         </button>
       </div>
@@ -286,6 +295,64 @@ const PlanNewTrip = () => {
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                 </svg>
                 <span>Copy link</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Settings Popup */}
+      {showPrivacySettings && (
+        <div className="popup-overlay" onClick={() => setShowPrivacySettings(false)}>
+          <div className="privacy-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="privacy-header">
+              <h3>Privacy settings</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowPrivacySettings(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="privacy-options">
+              <div
+                className={`privacy-option ${privacy === 'public' ? 'selected' : ''}`}
+                onClick={() => handlePrivacySelect('public')}
+              >
+                <div className="privacy-option-content">
+                  <h4>Public</h4>
+                  <p>Anyone can view</p>
+                </div>
+                {privacy === 'public' && (
+                  <div className="check-icon">✓</div>
+                )}
+              </div>
+
+              <div
+                className={`privacy-option ${privacy === 'friends' ? 'selected' : ''}`}
+                onClick={() => handlePrivacySelect('friends')}
+              >
+                <div className="privacy-option-content">
+                  <h4>Friends</h4>
+                  <p>Users who you follow and who follow you back can view</p>
+                </div>
+                {privacy === 'friends' && (
+                  <div className="check-icon">✓</div>
+                )}
+              </div>
+
+              <div
+                className={`privacy-option ${privacy === 'private' ? 'selected' : ''}`}
+                onClick={() => handlePrivacySelect('private')}
+              >
+                <div className="privacy-option-content">
+                  <h4>Private</h4>
+                  <p>Only you and others with the link can view</p>
+                </div>
+                {privacy === 'private' && (
+                  <div className="check-icon">✓</div>
+                )}
               </div>
             </div>
           </div>
@@ -462,15 +529,6 @@ const PlanNewTrip = () => {
           position: relative;
         }
 
-        .privacy-select {
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          cursor: pointer;
-        }
 
         .dropdown-display {
           display: flex;
@@ -799,6 +857,98 @@ const PlanNewTrip = () => {
         .invite-option span {
           font-size: 16px;
           color: #333;
+        }
+
+        /* Privacy Settings Popup */
+        .privacy-popup {
+          background: white;
+          border-radius: 16px;
+          padding: 0;
+          max-width: 400px;
+          width: 100%;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+          overflow: hidden;
+        }
+
+        .privacy-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .privacy-header h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .privacy-options {
+          padding: 20px;
+        }
+
+        .privacy-option {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+          margin-bottom: 8px;
+          border: 2px solid transparent;
+        }
+
+        .privacy-option:hover {
+          background-color: #f8f9ff;
+        }
+
+        .privacy-option.selected {
+          background-color: #f0f4ff;
+          border-color: #6366f1;
+        }
+
+        .privacy-option-content {
+          flex: 1;
+        }
+
+        .privacy-option h4 {
+          margin: 0 0 4px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .privacy-option p {
+          margin: 0;
+          font-size: 14px;
+          color: #666;
+          line-height: 1.4;
+        }
+
+        .check-icon {
+          width: 24px;
+          height: 24px;
+          background-color: #6366f1;
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: bold;
+          margin-left: 12px;
+          flex-shrink: 0;
+        }
+
+        .privacy-dropdown {
+          cursor: pointer;
+        }
+
+        .dropdown-display:hover {
+          color: #6366f1;
         }
       `}</style>
     </div>
