@@ -5,7 +5,7 @@ const HomeScreen = () => {
   const navigate = useNavigate();
 
   const handleCreatePlan = () => {
-    navigate('/destinations');
+    navigate('/plan-trip');
   };
 
   const handleJoinTeam = () => {
@@ -23,7 +23,7 @@ const HomeScreen = () => {
       {/* Main Content */}
       <div className="main-content">
         <button className="create-trip-button" onClick={handleCreatePlan}>
-          Create a new trip!
+          Create a new trip! 🚀
         </button>
         
         <button className="join-team-button" onClick={handleJoinTeam}>
