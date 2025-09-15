@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import BottomNav from "./BottomNav";
 
 // Must match the key used when saving journey items
 const LS_JOURNEY_KEY = "frame8.myJourney.v1";
@@ -83,9 +84,10 @@ export default function MyJourney() {
   // 2) early empty state
   if (!journey.length) {
     return (
-      <div style={{ padding: 16 }}>
+      <div style={{ padding: 16, paddingBottom: 100 }}>
         <h2 style={{ marginTop: 0 }}>My Journey</h2>
         <p>No places yet. Swipe right on destinations to add them here.</p>
+        <BottomNav active="journey" />
       </div>
     );
   }
@@ -95,7 +97,7 @@ export default function MyJourney() {
   const days = Object.keys(buckets).sort();
 
   return (
-    <div style={{ padding: 16 }}>
+    <div style={{ padding: 16, paddingBottom: 120 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
         <h2 style={{ margin: 0 }}>Brisbane</h2>
         {/* optional overall range */}
@@ -234,6 +236,7 @@ export default function MyJourney() {
           );
         })}
       </div>
+      <BottomNav active="journey" />
     </div>
   );
 }
