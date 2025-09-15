@@ -97,144 +97,159 @@ export default function MyJourney() {
   const days = Object.keys(buckets).sort();
 
   return (
-    <div style={{ padding: 16, paddingBottom: 120 }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-        <h2 style={{ margin: 0 }}>Brisbane</h2>
-        {/* optional overall range */}
-        <span style={{ color: "#6b7280" }}>
-          {days[0] !== "Unscheduled" && days[days.length - 1] !== "Unscheduled"
-            ? `${days[0]} — ${days[days.length - 1]}`
-            : ""}
-        </span>
-      </div>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        background: "#f8f9fa",
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: 16,
+          paddingBottom: 160,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+          <h2 style={{ margin: 0 }}>Brisbane</h2>
+          {/* optional overall range */}
+          <span style={{ color: "#6b7280" }}>
+            {days[0] !== "Unscheduled" && days[days.length - 1] !== "Unscheduled"
+              ? `${days[0]} — ${days[days.length - 1]}`
+              : ""}
+          </span>
+        </div>
 
-      <div style={{ marginTop: 16, position: "relative", paddingLeft: 56 }}>
-        {/* vertical timeline */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 26,
-            width: 4,
-            background: "#e5e7eb",
-            borderRadius: 2,
-          }}
-        />
+        <div style={{ marginTop: 16, position: "relative", paddingLeft: 56 }}>
+          {/* vertical timeline */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 26,
+              width: 4,
+              background: "#e5e7eb",
+              borderRadius: 2,
+            }}
+          />
 
-        {days.map((day) => {
-          const items = buckets[day].sort(
-            (a, b) =>
-              new Date(a.start || a.addedAt) - new Date(b.start || b.addedAt)
-          );
+          {days.map((day) => {
+            const items = buckets[day].sort(
+              (a, b) =>
+                new Date(a.start || a.addedAt) - new Date(b.start || b.addedAt)
+            );
 
-          return (
-            <section key={day} style={{ marginBottom: 24 }}>
-              {/* date tick on the left */}
-              <div style={{ position: "relative", margin: "12px 0 8px" }}>
-                <div
-                  style={{
-                    position: "absolute",
-                    left: -56,
-                    top: 0,
-                    width: 48,
-                    textAlign: "right",
-                    color: "#6b7280",
-                    fontWeight: 500,
-                  }}
-                >
-                  {day === "Unscheduled" ? "—" : day.slice(5).replace("-", "/")}
-                </div>
-              </div>
-
-              {items.map((a, idx) => {
-                const title = getTitle(a);
-                const addr = getAddress(a);
-                const img = resolveImage(a);
-
-                return (
-                  <article
-                    key={`${day}-${idx}-${a.id || a.place_id || title}`}
+            return (
+              <section key={day} style={{ marginBottom: 24 }}>
+                {/* date tick on the left */}
+                <div style={{ position: "relative", margin: "12px 0 8px" }}>
+                  <div
                     style={{
-                      margin: "12px 0 18px 0",
-                      background: "white",
-                      borderRadius: 12,
-                      boxShadow: "0 8px 20px rgba(0,0,0,.08)",
-                      overflow: "hidden",
-                      width: "min(760px, 100%)",
+                      position: "absolute",
+                      left: -56,
+                      top: 0,
+                      width: 48,
+                      textAlign: "right",
+                      color: "#6b7280",
+                      fontWeight: 500,
                     }}
                   >
-                    {/* timeline dot */}
-                    <div style={{ position: "relative" }}>
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: -38,
-                          top: 18,
-                          width: 18,
-                          height: 18,
-                          background: "#3b82f6",
-                          borderRadius: "50%",
-                          boxShadow: "0 0 0 4px #dbeafe",
-                        }}
-                      />
-                    </div>
+                    {day === "Unscheduled" ? "—" : day.slice(5).replace("-", "/")}
+                  </div>
+                </div>
 
-                    {/* cover image (with onError fallback) */}
-                        {(a.img || a.image) && (
-                        <img
-                            src={a.img || a.image}
-                            alt={title}
-                            onError={(e) => (e.currentTarget.src = getDefaultImage(a.type))}
-                            style={{ width: "100%", height: 160, objectFit: "cover" }}
+                {items.map((a, idx) => {
+                  const title = getTitle(a);
+                  const addr = getAddress(a);
+                  const imageUrl = resolveImage(a);
+
+                  return (
+                    <article
+                      key={`${day}-${idx}-${a.id || a.place_id || title}`}
+                      style={{
+                        margin: "12px 0 18px 0",
+                        background: "white",
+                        borderRadius: 12,
+                        boxShadow: "0 8px 20px rgba(0,0,0,.08)",
+                        width: "min(760px, 100%)",
+                      }}
+                    >
+                      {/* timeline dot */}
+                      <div style={{ position: "relative" }}>
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: -38,
+                            top: 18,
+                            width: 18,
+                            height: 18,
+                            background: "#3b82f6",
+                            borderRadius: "50%",
+                            boxShadow: "0 0 0 4px #dbeafe",
+                          }}
                         />
-                        )}
+                      </div>
 
-                    {/* content row */}
-                    <div style={{ padding: "14px 16px 16px" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <div style={{ fontSize: 18, fontWeight: 700 }}>
-                          {a.start && a.end
-                            ? `${fmtTime(a.start)} — ${fmtTime(a.end)} `
-                            : ""}
-                          {title}
-                        </div>
+                      {/* cover image (with onError fallback) */}
+                      {imageUrl && (
+                        <img
+                          src={imageUrl}
+                          alt={title}
+                          onError={(e) => (e.currentTarget.src = getDefaultImage(a.type))}
+                          style={{ width: "100%", height: 160, objectFit: "cover" }}
+                        />
+                      )}
 
-                        {/* right side meta / actions */}
-                        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                          {addr && (
-                            <span style={{ color: "#6b7280", fontSize: 12 }}>
-                              {addr}
-                            </span>
-                          )}
-                          <button
-                            style={{
-                              border: "1px solid #e5e7eb",
-                              background: "white",
-                              borderRadius: 8,
-                              padding: "4px 10px",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => alert("Comment placeholder")}
-                          >
-                            comment
-                          </button>
+                      {/* content row */}
+                      <div style={{ padding: "14px 16px 16px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div style={{ fontSize: 18, fontWeight: 700 }}>
+                            {a.start && a.end
+                              ? `${fmtTime(a.start)} — ${fmtTime(a.end)} `
+                              : ""}
+                            {title}
+                          </div>
+
+                          {/* right side meta / actions */}
+                          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                            {addr && (
+                              <span style={{ color: "#6b7280", fontSize: 12 }}>
+                                {addr}
+                              </span>
+                            )}
+                            <button
+                              style={{
+                                border: "1px solid #e5e7eb",
+                                background: "white",
+                                borderRadius: 8,
+                                padding: "4px 10px",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => alert("Comment placeholder")}
+                            >
+                              comment
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </section>
-          );
-        })}
+                    </article>
+                  );
+                })}
+              </section>
+            );
+          })}
+        </div>
       </div>
       <BottomNav active="journey" />
     </div>
