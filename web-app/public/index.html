@@ -26,8 +26,7 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background-color: #F5F5F5;
-            height: 100vh;
-            overflow: hidden;
+            /* REMOVED: height: 100vh; and overflow: hidden; */
         }
         
         * {
@@ -35,8 +34,9 @@
         }
         
         #root {
-            height: 100vh;
-            width: 100vw;
+            /* REMOVED: height: 100vh; width: 100vw; */
+            min-height: 100vh;
+            width: 100%;
         }
         
         /* Prevent text selection during swipe */

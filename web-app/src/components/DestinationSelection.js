@@ -439,7 +439,10 @@ function addToJourney(place) {
                 </div>
               </div>
               
-              <button className="info-btn" onClick={(e) => { e.stopPropagation(); showToast('Detail page coming soon!'); }}>
+              <button className="info-btn" onClick={(e) => { 
+                e.stopPropagation(); 
+                navigate('/destination-detail', { state: { destination: currentDestination } });
+              }}>
                 <img src={infoIcon} alt="Info" width="20" height="20" />
               </button>
             </div>

@@ -4,6 +4,7 @@ import HomeScreen from './components/HomeScreen';
 import PlanNewTrip from './components/PlanNewTrip';
 import DestinationSelection from './components/DestinationSelection';
 import MyJourney from './components/Myjourney';
+import DestinationDetail from './components/DestinationDetail';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<HomeScreen />} />
           <Route path="/plan-trip" element={<PlanNewTrip />} />
           <Route path="/destinations" element={<DestinationSelection />} />
+          <Route path="/destination-detail" element={<DestinationDetail />} />
           <Route path="/my-journey" element={<MyJourney />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
