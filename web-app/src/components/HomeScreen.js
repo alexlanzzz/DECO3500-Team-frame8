@@ -1,13 +1,265 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from './BottomNav';
 
+const GOOGLE_MAPS_API_KEY = 'AIzaSyA5XARq7HWdb2_qRBQB3bPTP_ZKJoaIJeM';
+const JOURNEY_STORAGE_KEY = 'frame8.myJourney.v1';
+const MAP_CACHE_KEY = 'frame8.mapGeocodeCache.v1';
+const FIFTEEN_MINUTES = 15 * 60 * 1000;
+const DEFAULT_CENTER = { lat: -27.4698, lng: 153.0251 };
+
+const loadGoogleMapsScript = (() => {
+  let loaderPromise;
+  return (apiKey) => {
+    if (typeof window === 'undefined') {
+      return Promise.reject(new Error('Window is undefined'));
+    }
+
+    if (window.google && window.google.maps) {
+      return Promise.resolve(window.google.maps);
+    }
+
+    if (loaderPromise) {
+      return loaderPromise;
+    }
+
+    loaderPromise = new Promise((resolve, reject) => {
+      const existingScript = document.querySelector('script[data-google-maps-loader]');
+
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(window.google.maps));
+        existingScript.addEventListener('error', reject);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+      script.async = true;
+      script.defer = true;
+      script.dataset.googleMapsLoader = 'true';
+      script.onload = () => resolve(window.google.maps);
+      script.onerror = () => reject(new Error('Failed to load Google Maps script'));
+      document.head.appendChild(script);
+    });
+
+    return loaderPromise;
+  };
+})();
+
+const readJSON = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    console.error(`Failed to read localStorage key ${key}:`, error);
+    return fallback;
+  }
+};
+
+const writeJSON = (key, value) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Failed to write localStorage key ${key}:`, error);
+  }
+};
+
+const geocodeAddress = async (address) => {
+  const response = await fetch(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Geocoding failed with status ${response.status}`);
+  }
+
+  const data = await response.json();
+  const location = data.results?.[0]?.geometry?.location;
+
+  if (!location) {
+    throw new Error('No geometry returned for address');
+  }
+
+  return { lat: location.lat, lng: location.lng };
+};
+
+const getJourneyLocations = async () => {
+  const journeyItems = readJSON(JOURNEY_STORAGE_KEY, []);
+  const cache = readJSON(MAP_CACHE_KEY, {});
+  const now = Date.now();
+  const seen = new Set();
+  const locations = [];
+  let cacheUpdated = false;
+
+  journeyItems.forEach((item) => {
+    const address = item.address || item.formattedAddress || item.vicinity;
+    if (!address) return;
+    const cacheKey = address.trim().toLowerCase();
+    if (seen.has(cacheKey)) return;
+    seen.add(cacheKey);
+    const name = item.name || item.displayName?.text || 'Saved place';
+    const cachedEntry = cache[cacheKey];
+
+    if (cachedEntry && now - cachedEntry.timestamp < FIFTEEN_MINUTES) {
+      locations.push({
+        name,
+        address,
+        lat: cachedEntry.lat,
+        lng: cachedEntry.lng,
+      });
+      return;
+    }
+
+    locations.push({ name, address, needsLookup: true, cacheKey });
+  });
+
+  const finalLocations = [];
+
+  for (const location of locations.slice(0, 8)) {
+    if (!location.needsLookup) {
+      finalLocations.push(location);
+      continue;
+    }
+
+    try {
+      const coords = await geocodeAddress(location.address);
+      cache[location.cacheKey] = { lat: coords.lat, lng: coords.lng, timestamp: now };
+      finalLocations.push({ name: location.name, address: location.address, ...coords });
+      cacheUpdated = true;
+    } catch (error) {
+      console.error(`Failed to geocode address ${location.address}:`, error);
+    }
+  }
+
+  if (cacheUpdated) {
+    writeJSON(MAP_CACHE_KEY, cache);
+  }
+
+  if (!finalLocations.length) {
+    return [
+      {
+        name: 'Brisbane CBD',
+        address: 'Brisbane City QLD',
+        lat: DEFAULT_CENTER.lat,
+        lng: DEFAULT_CENTER.lng,
+      },
+    ];
+  }
+
+  return finalLocations;
+};
+
 const HomeScreen = () => {
   const navigate = useNavigate();
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
+  const [mapLocations, setMapLocations] = useState([]);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+  const [mapError, setMapError] = useState('');
 
   const handleCreatePlan = () => {
     navigate('/plan-trip');
   };
+
+  useEffect(() => {
+    let isSubscribed = true;
+
+    const loadLocations = async () => {
+      setIsMapLoading(true);
+      try {
+        const locations = await getJourneyLocations();
+        if (!isSubscribed) return;
+        setMapLocations(locations);
+        setMapError('');
+      } catch (error) {
+        console.error('Unable to resolve map locations:', error);
+        if (isSubscribed) {
+          setMapError('Unable to load map locations right now.');
+          setMapLocations([]);
+        }
+      } finally {
+        if (isSubscribed) {
+          setIsMapLoading(false);
+        }
+      }
+    };
+
+    loadLocations();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapLocations.length || typeof window === 'undefined') {
+      return;
+    }
+
+    let isMounted = true;
+
+    const renderMap = async () => {
+      setIsMapLoading(true);
+      try {
+        await loadGoogleMapsScript(GOOGLE_MAPS_API_KEY);
+        if (!isMounted || !mapRef.current) return;
+
+        const map =
+          mapInstanceRef.current ||
+          new window.google.maps.Map(mapRef.current, {
+            center: mapLocations[0] || DEFAULT_CENTER,
+            zoom: 12,
+            disableDefaultUI: true,
+          });
+
+        mapInstanceRef.current = map;
+
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current = [];
+
+        const bounds = new window.google.maps.LatLngBounds();
+
+        mapLocations.forEach((loc) => {
+          const marker = new window.google.maps.Marker({
+            position: { lat: loc.lat, lng: loc.lng },
+            map,
+            title: loc.name,
+          });
+          markersRef.current.push(marker);
+          bounds.extend(marker.getPosition());
+        });
+
+        if (mapLocations.length > 1) {
+          map.fitBounds(bounds, 48);
+        } else {
+          map.setCenter(mapLocations[0]);
+          map.setZoom(13);
+        }
+
+        setMapError('');
+      } catch (error) {
+        console.error('Failed to initialise Google Map:', error);
+        if (isMounted) {
+          setMapError('Failed to load Google Map.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsMapLoading(false);
+        }
+      }
+    };
+
+    renderMap();
+
+    return () => {
+      isMounted = false;
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
+    };
+  }, [mapLocations]);
 
   return (
     <div className="home-screen">
@@ -79,13 +331,12 @@ const HomeScreen = () => {
         <div className="section">
           <h2 className="section-title">Trip Route</h2>
           <div className="map-container">
-            <div className="map-placeholder">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-              <span>VIEW</span>
-            </div>
+            <div ref={mapRef} className="map-canvas" />
+            {(isMapLoading || mapError) && (
+              <div className="map-overlay">
+                {mapError ? mapError : 'Loading map...'}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -236,29 +487,31 @@ const HomeScreen = () => {
         }
 
         .map-container {
+          position: relative;
           background: white;
           border-radius: 16px;
-          padding: 40px;
+          overflow: hidden;
           box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-          min-height: 200px;
+          min-height: 220px;
         }
 
-        .map-placeholder {
+        .map-canvas {
+          width: 100%;
+          height: 100%;
+          min-height: 220px;
+        }
+
+        .map-overlay {
+          position: absolute;
+          inset: 0;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          height: 100%;
-          color: #8e8e93;
-        }
-
-        .map-placeholder svg {
-          margin-bottom: 8px;
-        }
-
-        .map-placeholder span {
-          font-size: 18px;
+          background: rgba(248, 249, 250, 0.85);
+          color: #6c757d;
           font-weight: 600;
+          text-align: center;
+          padding: 0 16px;
         }
 
         .floating-add-btn {
