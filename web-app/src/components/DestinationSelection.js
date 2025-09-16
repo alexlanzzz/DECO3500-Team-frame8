@@ -259,7 +259,7 @@ function addToJourney(place) {
         setTimeout(() => {
           if (currentSwipeCount >= MAX_SWIPES) {
             showToast('All destinations selected! Planning complete.');
-            setTimeout(() => navigate('/'), 2000);
+            setTimeout(() => navigate('/agreement'), 2000);
           } else {
             setCurrentSwipeCount(prev => prev + 1);
             card.style.transform = 'translateX(0px) rotate(0deg)';

@@ -6,6 +6,7 @@ import DestinationSelection from './components/DestinationSelection';
 import MyJourney from './components/Myjourney';
 import DestinationDetail from './components/DestinationDetail';
 import CommentPage from './components/CommentPage';
+import Agreement from './components/Agreement';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/destinations" element={<DestinationSelection />} />
           <Route path="/destination-detail" element={<DestinationDetail />} />
           <Route path="/comment" element={<CommentPage />} />
+          <Route path="/agreement" element={<Agreement />} />
           <Route path="/my-journey" element={<MyJourney />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
