@@ -28,50 +28,31 @@ const Agreement = () => {
     setLocations((prev) => prev.filter((l) => l.name !== loc.name));
   };
 
-    return (
-    <div className="container mt-4">
-      <div className="row">
-        {locations.map((loc, idx) => (
-          <div className="col-md-4 mb-4" key={idx}>
-            <div className="card h-100 shadow-sm">
-              {loc.image && (
-                <img
-                  src={loc.image}
-                  className="card-img-top"
-                  alt={loc.name}
-                  style={{ objectFit: "cover", height: "200px" }}
-                />
-              )}
-              <div className="card-body d-flex flex-column">
-                <h5 className="card-title">{loc.name}</h5>
-                <p className="card-text">{loc.description}</p>
-                <p className="text-muted small">{loc.address}</p>
-                <p>
-                  <strong>{loc.price}</strong> | ⭐ {loc.rating}
-                </p>
-                <div className="mt-auto d-flex justify-content-between">
-                  <button
-                    className="btn btn-success"
-                    onClick={() => handleConfirm(loc)}
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => handleReject(loc)}
-                  >
-                    Reject
-                  </button>
-                </div>
-              </div>
-            </div>
+  return (
+    <div style={styles.container}>
+      {locations.map((loc, idx) => (
+        <div key={idx} style={styles.card}>
+          {loc.image && (
+            <img src={loc.image} alt={loc.name} style={styles.image} />
+          )}
+          <h3 style={styles.name}>{loc.name}</h3>
+          <p style={styles.meta}>
+            <strong>{loc.price}</strong> | ⭐ {loc.rating}
+          </p>
+          <div style={styles.buttonRow}>
+            <button style={styles.confirmBtn} onClick={() => handleConfirm(loc)}>
+              Confirm
+            </button>
+            <button style={styles.rejectBtn} onClick={() => handleReject(loc)}>
+              Reject
+            </button>
+            <button style={styles.detailsBtn}>Details</button>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
-      {/* Debug / Show confirmed list */}
       {confirmedLocations.length > 0 && (
-        <div className="mt-5">
+        <div style={{ marginTop: "2rem" }}>
           <h4>✅ Confirmed Locations</h4>
           <ul>
             {confirmedLocations.map((loc, idx) => (
@@ -82,6 +63,72 @@ const Agreement = () => {
       )}
     </div>
   );
+};
+
+// Simple inline styles (replace with CSS classes if you prefer)
+const styles = {
+  container: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "1rem",
+    padding: "1rem",
+  },
+  card: {
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    padding: "1rem",
+    backgroundColor: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+  },
+  image: {
+    width: "100%",
+    height: "160px",
+    objectFit: "cover",
+    borderRadius: "6px",
+    marginBottom: "0.75rem",
+  },
+  name: {
+    margin: "0.5rem 0",
+    fontSize: "1.1rem",
+    textAlign: "center",
+  },
+  meta: {
+    margin: "0.25rem 0 1rem 0",
+    fontSize: "0.9rem",
+    color: "#555",
+  },
+  buttonRow: {
+    display: "flex",
+    gap: "0.5rem",
+    marginTop: "auto",
+  },
+  confirmBtn: {
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    padding: "0.5rem 1rem",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  rejectBtn: {
+    backgroundColor: "#f44336",
+    color: "white",
+    border: "none",
+    padding: "0.5rem 1rem",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  detailsBtn: {
+    backgroundColor: "#2196F3",
+    color: "white",
+    border: "none",
+    padding: "0.5rem 1rem",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
 };
 
 export default Agreement;
