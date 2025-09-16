@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import JourneyMap from "./JourneyMap";
 import BottomNav from "./BottomNav";
 
@@ -50,10 +50,10 @@ function resolveImage(item) {
 
 // Group items by YYYY-MM-DD; prefer scheduled `start`, fallback to `addedAt`
 function groupByDate(items) {
-  return items.reduce((acc, it) => {
+  return items.reduce((acc, it, index) => {
     const iso = it.start || it.addedAt;
     const day = iso ? iso.slice(0, 10) : "Unscheduled";
-    (acc[day] = acc[day] || []).push(it);
+    (acc[day] = acc[day] || []).push({ item: it, index });
     return acc;
   }, {});
 }
@@ -86,6 +86,13 @@ function formatMapDate(day) {
 
 export default function MyJourney() {
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const [journey, setJourney] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(LS_JOURNEY_KEY)) || [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     if (!isMapOpen) return;
@@ -96,13 +103,16 @@ export default function MyJourney() {
     };
   }, [isMapOpen]);
 
-  const journey = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem(LS_JOURNEY_KEY)) || [];
-    } catch {
-      return [];
-    }
-  }, []);
+  const removeJourneyItem = (targetIndex) => {
+    setJourney((prev) => {
+      const next = prev.filter((_, idx) => idx !== targetIndex);
+      if (next.length === prev.length) {
+        return prev;
+      }
+      localStorage.setItem(LS_JOURNEY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   if (!journey.length) {
     return (
@@ -177,9 +187,10 @@ export default function MyJourney() {
         />
 
         {days.map((day) => {
-          const items = buckets[day].sort(
+          const items = [...buckets[day]].sort(
             (a, b) =>
-              new Date(a.start || a.addedAt) - new Date(b.start || b.addedAt)
+              new Date(a.item.start || a.item.addedAt) -
+              new Date(b.item.start || b.item.addedAt)
           );
 
           return (
@@ -200,14 +211,15 @@ export default function MyJourney() {
                 </div>
               </div>
 
-              {items.map((a, idx) => {
+              {items.map((entry, idx) => {
+                const a = entry.item;
                 const title = getTitle(a);
                 const addr = getAddress(a);
                 const imageUrl = resolveImage(a);
 
                 return (
                   <article
-                    key={`${day}-${idx}-${a.id || a.place_id || title}`}
+                    key={`${day}-${entry.index}`}
                     style={{
                       margin: "12px 0 18px 0",
                       background: "white",
@@ -215,6 +227,7 @@ export default function MyJourney() {
                       boxShadow: "0 8px 20px rgba(0,0,0,.08)",
                       overflow: "hidden",
                       width: "min(760px, 100%)",
+                      position: "relative",
                     }}
                   >
                     <div style={{ position: "relative" }}>
@@ -240,6 +253,29 @@ export default function MyJourney() {
                         style={{ width: "100%", height: 160, objectFit: "cover" }}
                       />
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => removeJourneyItem(entry.index)}
+                      aria-label="Remove from journey"
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        border: "none",
+                        background: "rgba(17, 24, 39, 0.65)",
+                        color: "white",
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                    >
+                      X
+                    </button>
 
                     <div style={{ padding: "14px 16px 16px" }}>
                       <div
