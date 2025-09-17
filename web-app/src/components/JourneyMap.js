@@ -156,6 +156,8 @@ export default function JourneyMap({ height = 220, className = '', style = {} })
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
+  const directionsRendererRef = useRef(null);
+  const directionsServiceRef = useRef(null);
   const [mapLocations, setMapLocations] = useState([]);
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [mapError, setMapError] = useState('');
@@ -213,10 +215,10 @@ export default function JourneyMap({ height = 220, className = '', style = {} })
 
         mapInstanceRef.current = map;
 
+        const bounds = new window.google.maps.LatLngBounds();
+
         markersRef.current.forEach((marker) => marker.setMap(null));
         markersRef.current = [];
-
-        const bounds = new window.google.maps.LatLngBounds();
 
         mapLocations.forEach((loc) => {
           const marker = new window.google.maps.Marker({
@@ -228,11 +230,69 @@ export default function JourneyMap({ height = 220, className = '', style = {} })
           bounds.extend(marker.getPosition());
         });
 
-        if (mapLocations.length > 1) {
-          map.fitBounds(bounds, 48);
-        } else {
+        if (!directionsServiceRef.current) {
+          directionsServiceRef.current = new window.google.maps.DirectionsService();
+        }
+
+        if (!directionsRendererRef.current) {
+          directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+            suppressMarkers: true,
+            preserveViewport: true,
+            polylineOptions: {
+              strokeColor: '#2563eb',
+              strokeOpacity: 0.9,
+              strokeWeight: 5,
+            },
+          });
+        }
+
+        directionsRendererRef.current.setMap(map);
+
+        const totalLocations = mapLocations.length;
+
+        if (totalLocations > 1) {
+          const origin = mapLocations[0];
+          const destination = mapLocations[totalLocations - 1];
+          const waypoints = mapLocations.slice(1, totalLocations - 1).map((loc) => ({
+            location: { lat: loc.lat, lng: loc.lng },
+            stopover: true,
+          }));
+
+          directionsServiceRef.current.route(
+            {
+              origin: { lat: origin.lat, lng: origin.lng },
+              destination: { lat: destination.lat, lng: destination.lng },
+              travelMode: window.google.maps.TravelMode.DRIVING,
+              waypoints,
+              optimizeWaypoints: false,
+            },
+            (result, status) => {
+              const okStatus =
+                window.google?.maps?.DirectionsStatus?.OK || 'OK';
+              if (status === okStatus) {
+                directionsRendererRef.current.setDirections(result);
+                const routeBounds = result.routes?.[0]?.bounds;
+                if (routeBounds) {
+                  map.fitBounds(routeBounds, 48);
+                }
+              } else {
+                console.warn('Directions request failed:', status);
+                directionsRendererRef.current.set('directions', null);
+                map.fitBounds(bounds, 48);
+              }
+            }
+          );
+        } else if (totalLocations === 1) {
+          directionsRendererRef.current.set('directions', null);
           map.setCenter(mapLocations[0]);
           map.setZoom(13);
+        } else {
+          directionsRendererRef.current.set('directions', null);
+        }
+
+        if (totalLocations <= 1 && bounds.isEmpty()) {
+          map.setCenter(DEFAULT_CENTER);
+          map.setZoom(12);
         }
 
         setMapError('');
@@ -254,6 +314,10 @@ export default function JourneyMap({ height = 220, className = '', style = {} })
       isMounted = false;
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
+      if (directionsRendererRef.current) {
+        directionsRendererRef.current.setMap(null);
+        directionsRendererRef.current = null;
+      }
     };
   }, [mapLocations]);
 
