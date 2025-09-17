@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import JourneyMap from "./JourneyMap";
 import BottomNav from "./BottomNav";
 
@@ -113,6 +114,8 @@ export default function MyJourney() {
       return next;
     });
   };
+
+  const navigate = useNavigate();
 
   if (!journey.length) {
     return (
@@ -300,6 +303,7 @@ export default function MyJourney() {
                             </span>
                           )}
                           <button
+                            type="button"
                             style={{
                               border: "1px solid #e5e7eb",
                               background: "white",
@@ -307,7 +311,11 @@ export default function MyJourney() {
                               padding: "4px 10px",
                               cursor: "pointer",
                             }}
-                            onClick={() => alert("Comment placeholder")}
+                            onClick={() =>
+                              navigate("/comment", {
+                                state: { destination: a },
+                              })
+                            }
                           >
                             comment
                           </button>
