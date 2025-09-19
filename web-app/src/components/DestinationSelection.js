@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import infoIcon from '../assets/icons/info.png';
 import purseIcon from '../assets/icons/purse.png';
 
@@ -382,6 +382,7 @@ function addToJourney(place) {
         
         <div className="counter">
           {currentSwipeCount}/{MAX_SWIPES}
+          
         </div>
       </div>
 
@@ -452,9 +453,9 @@ function addToJourney(place) {
 
       {/* Swipe Instructions */}
       <div className="instructions">
-        <span className="swipe-left">← Not interested</span>
+        <span className="swipe-left" onClick="">← Not interested</span>
         <span className="swipe-divider"> | </span>
-        <span className="swipe-right">Interested →</span>
+        <span className="swipe-right"onClick="">Interested →</span>
       </div>
 
       {/* Toast */}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 import BottomNav from './BottomNav';
 import JourneyMap from './JourneyMap';
 
@@ -28,6 +28,7 @@ const HomeScreen = () => {
       <div className="header">
         <h1 className="greeting">Hello, NAME</h1>
         <p className="welcome">Welcome to Cotrip</p>
+        <NavLink to="/agreements" className={({ isActive }) => isActive ? "active" : ""}>TESTING</NavLink>
       </div>
 
       {/* Search Bar */}
