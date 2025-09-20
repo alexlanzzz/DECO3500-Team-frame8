@@ -17,7 +17,7 @@ const DestinationDetail = () => {
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
-  const GOOGLE_PLACES_API_KEY = 'AIzaSyCu1wvtBH6Lmgr-eqVfKTU76Sm6oNSMnJo';
+  const GOOGLE_PLACES_API_KEY = '';
 
   // Touch handlers for image swiping
   const handleTouchStart = (e) => {

@@ -18,7 +18,7 @@ const DestinationSelection = () => {
   const SWIPE_THRESHOLD = 100;
   
   // Your Google Places API key
-  const GOOGLE_PLACES_API_KEY = 'AIzaSyCu1wvtBH6Lmgr-eqVfKTU76Sm6oNSMnJo';
+  const GOOGLE_PLACES_API_KEY = '';
 
   // LocalStorage keys
 const LS_JOURNEY_KEY = "frame8.myJourney.v1";
